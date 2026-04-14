@@ -210,12 +210,12 @@ tbody tr:hover .acts{opacity:1}
   <div class="login-box">
     <div class="login-logo">Overture <em>Ventures</em></div>
     <div class="login-sub">Portfolio Support</div>
-    <div class="login-desc">Sign in with your Overture Google account to access the portfolio support tracker.</div>
+    <div class="login-desc">Sign in with your email to access the portfolio support tracker.</div>
     <button class="login-btn" onclick="signIn()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
       Sign in with Google
     </button>
-    <div class="login-note">@overture.eco accounts only</div>
+    <div class="login-note">Access restricted to invited users</div>
   </div>
 </div>
 
@@ -258,9 +258,15 @@ tbody tr:hover .acts{opacity:1}
       <div class="panel-body" id="pow"></div>
     </div>
   </div>
-  <div class="tab-row">
-    <div class="tab active" onclick="switchTab('active',this)">Active Tasks</div>
-    <div class="tab" onclick="switchTab('archive',this)">Archive</div>
+  <div class="tab-row" style="justify-content:space-between;align-items:center">
+    <div style="display:flex;gap:4px">
+      <div class="tab active" onclick="switchTab('active',this)">Active Tasks</div>
+      <div class="tab" onclick="switchTab('archive',this)">Archive</div>
+    </div>
+    <button class="btn-add" onclick="openModal()" style="padding:8px 20px;font-size:12px" id="addTaskBtn">
+      <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
+      Add Task
+    </button>
   </div>
   <div class="filter-bar">
     <label>Filter</label>
@@ -296,7 +302,6 @@ tbody tr:hover .acts{opacity:1}
       <table>
         <thead>
           <tr>
-            <th onclick="sort('id')">ID</th>
             <th onclick="sort('company')">Company</th>
             <th onclick="sort('type')">Type</th>
             <th>Description</th>
@@ -646,24 +651,32 @@ function filtered() {
     if(statusFilter==='__over__'&&!isOver(t)) return false;
     else if(statusFilter&&statusFilter!=='__over__'&&t.status!==statusFilter) return false;
     return true;
-  }).sort((a,b)=>{ const av=a[sortCol]||'',bv=b[sortCol]||''; return av<bv?sortDir:av>bv?-sortDir:0; });
+  }).sort((a,b)=>{
+    if(sortCol!=='created'){
+      const av=a[sortCol]||'',bv=b[sortCol]||''; return av<bv?sortDir:av>bv?-sortDir:0;
+    }
+    // Default: Open → In Progress → Complete, then by created date desc
+    const statusOrder={'Open':0,'In Progress':1,'Complete':2,'Archived':3};
+    const sa=statusOrder[a.status]??2, sb=statusOrder[b.status]??2;
+    if(sa!==sb) return sa-sb;
+    const av=a.created||'',bv=b.created||''; return av<bv?1:av>bv?-1:0;
+  });
 }
 
 function renderTable() {
   const data=filtered();
   document.getElementById('tableCt').textContent=`${data.length} task${data.length!==1?'s':''}`;
   const tbody=document.getElementById('tbody');
-  if(!data.length){ tbody.innerHTML=`<tr><td colspan="10"><div class="empty">No tasks match the current filters</div></td></tr>`; return; }
+  if(!data.length){ tbody.innerHTML=`<tr><td colspan="9"><div class="empty">No tasks match the current filters</div></td></tr>`; return; }
   tbody.innerHTML=data.map(t=>{
     const over=isOver(t), diff=dDiff(t.due);
     const ddHtml=t.due?(over?`<span class="dd dd-over">⚠ ${dFmt(t.due)}</span>`:diff!==null&&diff<=7?`<span class="dd dd-soon">${dFmt(t.due)}</span>`:`<span class="dd">${dFmt(t.due)}</span>`):`<span style="color:var(--fog3)">—</span>`;
     const pc=t.priority==='High'?'p-h':t.priority==='Medium'?'p-m':'p-l';
     const hasNotes=t.notes&&t.notes.trim();
     const acts=currentTab==='active'?`<div class="acts"><button class="bsm" onclick="event.stopPropagation();editTask('${t.id}')">Edit</button>${t.status!=='Complete'?`<button class="bsm done" onclick="event.stopPropagation();doComplete('${t.id}')">✓ Done</button>`:''}<button class="bsm arch" onclick="event.stopPropagation();doArchive('${t.id}')">Archive</button></div>`:'';
-    const detailRow=hasNotes?`<tr class="detail-row" id="detail-${t.id}" style="display:none"><td colspan="10"><div class="detail-box"><div class="detail-lbl">Full context</div><div class="detail-txt">${t.notes}</div></div></td></tr>`:'';
+    const detailRow=hasNotes?`<tr class="detail-row" id="detail-${t.id}" style="display:none"><td colspan="9"><div class="detail-box"><div class="detail-lbl">Full context</div><div class="detail-txt">${t.notes}</div></div></td></tr>`:'';
     return `<tr onclick="${hasNotes?`toggleDetail('${t.id}')`:''}">
-      <td class="td-id">${t.id}${hasNotes?'<span class="dot">+</span>':''}</td>
-      <td class="td-co">${t.company}</td>
+      <td class="td-co">${hasNotes?`<span class="dot" style="margin-right:4px;color:var(--yellow2)">+</span>`:''}${t.company}</td>
       <td><span class="type-chip">${t.type}</span></td>
       <td class="td-desc"><div class="td-desc-in">${t.desc}</div></td>
       <td><span class="ow-chip">${t.owner}</span></td>
@@ -703,7 +716,7 @@ function clearFilters(){
 function sort(col){
   sortDir=sortCol===col?sortDir*-1:1; sortCol=col;
   document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sorted'));
-  const idx=['id','company','type',null,'owner','priority','status','due'].indexOf(col);
+  const idx=['company','type',null,'owner','priority','status','due'].indexOf(col);
   if(idx>=0) document.querySelectorAll('thead th')[idx]?.classList.add('sorted');
   render();
 }
@@ -713,6 +726,7 @@ function switchTab(tab,el){
   el.classList.add('active');
   document.getElementById('panelsArea').style.display=tab==='active'?'grid':'none';
   document.getElementById('tableLabel').textContent=tab==='active'?'All Tasks':'Archive';
+  document.getElementById('addTaskBtn').style.display=tab==='active'?'flex':'none';
   if(tab==='archive'&&!archiveTasks.length) loadArchive();
   clearFilters();
 }
