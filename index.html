@@ -24,6 +24,7 @@
   --prog-bg:#FFF8E8; --prog-t:#9A6800;
   --done-bg:#EDFAF3; --done-t:#1A7A4A;
   --over-bg:#FFF0F0; --over-t:#C03030;
+  --review-bg:#FFE8D9; --review-t:#B85410;
   --rose:   #F05D5E;
   --sage:   #6BCB77;
   --amber:  #F4A83A;
@@ -31,7 +32,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5}
-
 #splash{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
 #splash.out{opacity:0;pointer-events:none}
 .sp-logo{font-family:'Fraunces',serif;font-size:30px;font-weight:300;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
@@ -40,7 +40,6 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .sp-bar{width:140px;height:1px;background:rgba(255,255,255,.1)}
 .sp-fill{height:100%;background:var(--yellow);width:0;animation:spfill 1.6s ease forwards}
 @keyframes spfill{to{width:100%}}
-
 #loginScreen{position:fixed;inset:0;background:var(--navy);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500}
 #loginScreen.show{display:flex}
 .login-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:40px 48px;text-align:center;max-width:400px;width:90%}
@@ -51,7 +50,6 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .login-btn{background:var(--yellow);color:var(--navy);border:none;padding:11px 28px;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
 .login-btn:hover{background:var(--yellow2)}
 .login-note{font-size:10px;color:rgba(255,255,255,.25);margin-top:16px}
-
 .hdr{background:var(--navy);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.07)}
 .hdr-logo{font-family:'Fraunces',serif;font-size:16px;font-weight:300;color:#fff;display:flex;align-items:center;gap:10px}
 .hdr-logo em{color:var(--yellow);font-style:italic}
@@ -65,23 +63,22 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .user-name{font-size:10px;color:rgba(255,255,255,.6)}
 .btn-add{background:var(--yellow);color:var(--navy);border:none;padding:6px 16px;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:background .15s;display:flex;align-items:center;gap:6px}
 .btn-add:hover{background:var(--yellow2)}
-
 .wrap{max-width:1480px;margin:0 auto;padding:20px 28px}
-
-.sc-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.sc-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
 .sc{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
 .sc::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;border-radius:3px 0 0 3px}
 .sc:hover{border-color:var(--yellow);transform:translateY(-1px)}
 .sc.active{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow)}
 .sc.active::after,.sc:hover::after{background:var(--yellow)}
+.sc-c-review.active::after,.sc-c-review:hover::after{background:var(--review-t)}
 .sc-c-open.active::after,.sc-c-open:hover::after{background:var(--open-t)}
 .sc-c-prog.active::after,.sc-c-prog:hover::after{background:var(--prog-t)}
 .sc-c-over.active::after,.sc-c-over:hover::after{background:var(--rose)}
 .sc-c-done.active::after,.sc-c-done:hover::after{background:var(--sage)}
 .sc-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .sc-num{font-family:'Fraunces',serif;font-size:34px;font-weight:300;line-height:1;color:var(--navy)}
+.sc-num.c-review{color:var(--review-t)}
 .sc-num.c-open{color:var(--open-t)}.sc-num.c-prog{color:var(--prog-t)}.sc-num.c-over{color:var(--rose)}.sc-num.c-done{color:var(--sage)}
-
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 .panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
 .panel-hdr{background:var(--navy2);color:#fff;padding:9px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
@@ -98,7 +95,6 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .ow-av{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ow-name{font-size:12px;font-weight:500;margin-bottom:2px}
 .ow-ct-lbl{font-size:10px;color:var(--muted);margin-bottom:3px}
-
 .filter-bar{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 .filter-bar label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .filter-bar select,.filter-bar input{border:1px solid var(--border);border-radius:var(--r);padding:5px 9px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);background:var(--fog);outline:none;transition:border-color .15s}
@@ -107,11 +103,9 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .sp{flex:1}
 .btn-clr{font-size:10px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:var(--r);padding:5px 12px;cursor:pointer;font-family:'DM Mono',monospace}
 .btn-clr:hover{color:var(--text);border-color:var(--navy)}
-
 .tab-row{display:flex;gap:4px;margin-bottom:14px}
 .tab{padding:6px 16px;border-radius:var(--r);font-size:10px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:all .15s;letter-spacing:.05em;text-transform:uppercase}
 .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
-
 .table-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
 .table-hdr{background:var(--navy);color:#fff;padding:9px 16px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
 .table-ct{font-size:10px;opacity:.4}
@@ -128,38 +122,48 @@ tbody td{padding:9px 10px;font-size:11px;vertical-align:middle}
 .td-co{font-weight:500;font-size:12px;white-space:nowrap}
 .td-desc{max-width:280px}
 .td-desc-in{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
-
+.dup-badge{display:inline-block;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--prog-t);background:var(--prog-bg);border-radius:3px;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+.src-badge{display:inline-block;font-size:9px;letter-spacing:.04em;color:var(--muted);background:var(--fog2);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle}
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.b-review{background:var(--review-bg);color:var(--review-t)}
 .b-open{background:var(--open-bg);color:var(--open-t)}
 .b-prog{background:var(--prog-bg);color:var(--prog-t)}
 .b-done{background:var(--done-bg);color:var(--done-t)}
 .b-arch{background:var(--fog2);color:var(--muted)}
+.b-dismiss{background:var(--fog2);color:var(--muted);text-decoration:line-through}
 .b-over{background:var(--over-bg);color:var(--over-t)}
 .type-chip{font-size:10px;color:var(--muted);background:var(--fog2);border-radius:3px;padding:2px 7px;white-space:nowrap}
 .ow-chip{background:var(--fog2);border-radius:20px;padding:2px 9px;font-size:10px;white-space:nowrap}
+.ow-chip.unset{color:var(--muted);font-style:italic;background:transparent;border:1px dashed var(--border)}
 .prio{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
 .p-h{background:var(--rose)}.p-m{background:var(--amber)}.p-l{background:var(--sage)}
 .dd{font-size:10px}
 .dd-over{color:var(--rose);font-weight:500}
 .dd-soon{color:var(--prog-t);font-weight:500}
-
 .acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
 tbody tr:hover .acts{opacity:1}
+tbody tr.row-review .acts{opacity:1}
+tbody tr.row-review{background:#FFFAF5}
+tbody tr.row-review:hover{background:#FFF3E8}
 .bsm{border:1px solid var(--border);background:#fff;border-radius:4px;padding:3px 9px;font-size:10px;font-weight:500;cursor:pointer;font-family:'DM Mono',monospace;color:var(--text);transition:all .1s;white-space:nowrap}
 .bsm:hover{border-color:var(--yellow);color:var(--navy)}
 .bsm.done{color:var(--done-t);border-color:var(--done-t)}
 .bsm.done:hover{background:var(--done-bg)}
+.bsm.approve{color:#fff;background:var(--done-t);border-color:var(--done-t)}
+.bsm.approve:hover{background:#155f3a}
+.bsm.dismiss{color:var(--rose);border-color:var(--rose)}
+.bsm.dismiss:hover{background:var(--over-bg)}
 .bsm.arch{color:var(--muted)}
-
 .detail-row td{padding:0!important;cursor:default}
 .detail-box{background:var(--fog);border-left:3px solid var(--yellow);padding:12px 16px 12px 20px;border-top:1px solid var(--border)}
+.detail-row.is-review .detail-box{border-left-color:var(--review-t)}
 .detail-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .detail-txt{font-size:12px;line-height:1.75;color:var(--navy2);max-width:860px;font-family:'Fraunces',serif;font-weight:300;font-style:italic}
-
+.detail-meta{font-size:10px;color:var(--muted);margin-top:10px;font-family:'DM Mono',monospace;font-style:normal}
+.detail-meta strong{color:var(--text);font-weight:500}
 .empty{text-align:center;padding:48px;color:var(--muted);font-size:11px}
 .err-bar{background:var(--over-bg);border:1px solid var(--rose);border-radius:var(--r);padding:10px 16px;font-size:11px;color:var(--over-t);margin-bottom:16px;display:none}
 .err-bar.show{display:block}
-
 .mbg{display:none;position:fixed;inset:0;background:rgba(11,31,58,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .mbg.open{display:flex}
 .modal{background:#fff;border-radius:10px;width:620px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25)}
@@ -183,13 +187,10 @@ tbody tr:hover .acts{opacity:1}
 .btn-sv{background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:7px 22px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;cursor:pointer}
 .btn-sv:hover{background:var(--navy2)}
 .btn-sv:disabled{opacity:.4;cursor:not-allowed}
-
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--navy);color:#fff;padding:9px 22px;border-radius:20px;font-size:11px;opacity:0;transition:all .3s;pointer-events:none;z-index:400;border:1px solid rgba(245,200,66,.3)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{background:var(--rose);border-color:transparent}
-
 .ft{text-align:center;padding:18px;font-size:10px;color:var(--fog3);letter-spacing:.05em}
-
 @media(max-width:960px){
   .sc-row{grid-template-columns:repeat(3,1fr)}
   .panels{grid-template-columns:1fr}
@@ -199,13 +200,11 @@ tbody tr:hover .acts{opacity:1}
 </style>
 </head>
 <body>
-
 <div id="splash">
   <div class="sp-logo">Overture <em>Ventures</em></div>
   <div class="sp-sub">Portfolio Support Tracker</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
 </div>
-
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">Overture <em>Ventures</em></div>
@@ -218,7 +217,6 @@ tbody tr:hover .acts{opacity:1}
     <div class="login-note">Access restricted to invited users</div>
   </div>
 </div>
-
 <header class="hdr" id="appHeader" style="display:none">
   <div class="hdr-logo">
     Overture <em>Ventures</em>
@@ -237,12 +235,12 @@ tbody tr:hover .acts{opacity:1}
     </button>
   </div>
 </header>
-
 <div id="app" style="display:none">
 <div class="wrap">
   <div class="err-bar" id="errBar"></div>
   <div class="sc-row">
     <div class="sc active" onclick="filterStatus('')"><div class="sc-lbl">All Active</div><div class="sc-num" id="cn-all">—</div></div>
+    <div class="sc sc-c-review" onclick="filterStatus('Needs Review')"><div class="sc-lbl">Needs Review</div><div class="sc-num c-review" id="cn-review">—</div></div>
     <div class="sc sc-c-open" onclick="filterStatus('Open')"><div class="sc-lbl">Open</div><div class="sc-num c-open" id="cn-open">—</div></div>
     <div class="sc sc-c-prog" onclick="filterStatus('In Progress')"><div class="sc-lbl">In Progress</div><div class="sc-num c-prog" id="cn-prog">—</div></div>
     <div class="sc sc-c-over" onclick="filterStatus('__over__')"><div class="sc-lbl">Overdue</div><div class="sc-num c-over" id="cn-over">—</div></div>
@@ -320,9 +318,7 @@ tbody tr:hover .acts{opacity:1}
 </div>
 <div class="ft">Overture Ventures · Portfolio Support Tracker · Internal use only</div>
 </div>
-
 <div id="toast"></div>
-
 <div class="mbg" id="mbg" onclick="closeModalOut(event)">
   <div class="modal">
     <div class="modal-hdr">
@@ -384,6 +380,7 @@ tbody tr:hover .acts{opacity:1}
         <div class="fgrp">
           <label>Owner</label>
           <select id="f-owner">
+            <option value="">— Unassigned —</option>
             <option>Emma</option><option>Leila</option><option>Allison</option>
             <option>Shomik</option><option>Michael</option><option>Tamim</option>
             <option>Brandon</option><option>Liron</option><option>James</option>
@@ -407,6 +404,7 @@ tbody tr:hover .acts{opacity:1}
         <div class="fgrp">
           <label>Status</label>
           <select id="f-status">
+            <option>Needs Review</option>
             <option>Open</option><option>In Progress</option><option>Complete</option>
           </select>
         </div>
@@ -436,28 +434,26 @@ tbody tr:hover .acts{opacity:1}
     </div>
   </div>
 </div>
-
 <script>
 const SHEET_ID  = '1Ya24kZYmLvuuoum6Jq4vz1L_6jcRqP-OOJFEYwitasE';
 const CLIENT_ID = '567331526524-e5qpq7v737rbs1gm5p7cla8iht8rbka9.apps.googleusercontent.com';
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets';
 const API_BASE  = 'https://sheets.googleapis.com/v4/spreadsheets';
 const TAB = 'Tasks', ARCHIVE = 'Archive';
-const COLS    = ['id','company','type','desc','reqby','owner','partner','priority','status','source','due','created','completed','notes','reminderInternal','reminderExternal'];
-const HEADERS = ['Task ID','Company','Task Type','Description','Requested By','Owner','External Partner','Priority','Status','Source','Due Date','Date Created','Date Completed','Notes / Outcome','Reminder Sent (Internal)','Reminder Sent (External)'];
-
+const COLS    = ['id','company','type','desc','reqby','owner','partner','priority','status','source','due','created','completed','notes','reminderInternal','reminderExternal','createdBy'];
+const HEADERS = ['Task ID','Company','Task Type','Description','Requested By','Owner','External Partner','Priority','Status','Source','Due Date','Date Created','Date Completed','Notes / Outcome','Reminder Sent (Internal)','Reminder Sent (External)','Created By'];
+const LAST_COL = 'Q';
 let accessToken = null;
+let currentUser = '';
 let tasks = [], archiveTasks = [];
 let sortCol = 'created', sortDir = -1;
 let statusFilter = '', currentTab = 'active', editId = null;
 const today = new Date(); today.setHours(0,0,0,0);
-
 const dStr  = d => d instanceof Date ? d.toISOString().slice(0,10) : (d||'');
 const dFmt  = s => s ? new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
 const dDiff = s => s ? Math.round((new Date(s+'T12:00:00')-today)/86400000) : null;
 const nowStr= () => dStr(new Date());
-const isOver= t => t.due && t.status!=='Complete' && t.status!=='Archived' && new Date(t.due+'T12:00:00') < today;
-
+const isOver= t => t.due && t.status!=='Complete' && t.status!=='Archived' && t.status!=='Dismissed' && t.status!=='Needs Review' && new Date(t.due+'T12:00:00') < today;
 function signIn() {
   const client = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -468,7 +464,8 @@ function signIn() {
       try {
         const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + accessToken } });
         const u = await r.json();
-        document.getElementById('userName').textContent = u.given_name || u.email;
+        currentUser = u.given_name || u.email;
+        document.getElementById('userName').textContent = currentUser;
         document.getElementById('userAv').textContent = (u.given_name||u.email).slice(0,2).toUpperCase();
       } catch(e) {}
       showApp();
@@ -477,23 +474,20 @@ function signIn() {
   });
   client.requestAccessToken();
 }
-
 function signOut() {
   if (!confirm('Sign out?')) return;
   google.accounts.oauth2.revoke(accessToken, () => {
-    accessToken = null; tasks = []; archiveTasks = [];
+    accessToken = null; tasks = []; archiveTasks = []; currentUser='';
     document.getElementById('app').style.display = 'none';
     document.getElementById('appHeader').style.display = 'none';
     document.getElementById('loginScreen').classList.add('show');
   });
 }
-
 function showApp() {
   document.getElementById('loginScreen').classList.remove('show');
   document.getElementById('appHeader').style.display = 'flex';
   document.getElementById('app').style.display = 'block';
 }
-
 async function api(method, path, body) {
   const url = `${API_BASE}/${SHEET_ID}${path}`;
   const r = await fetch(url, {
@@ -503,11 +497,9 @@ async function api(method, path, body) {
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || r.status); }
   return r.json();
 }
-
 const sheetsGet    = range => api('GET', `/values/${encodeURIComponent(range)}`);
 const sheetsUpdate = (range, values) => api('PUT', `/values/${encodeURIComponent(range)}?valueInputOption=RAW`, { values });
 const sheetsAppend = (range, values) => api('POST', `/values/${encodeURIComponent(range)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, { values });
-
 const _ids = {};
 async function getTabId(name) {
   if (_ids[name]) return _ids[name];
@@ -515,25 +507,24 @@ async function getTabId(name) {
   d.sheets.forEach(s => { _ids[s.properties.title] = s.properties.sheetId; });
   return _ids[name];
 }
-
 async function deleteRow(tabName, rowNum) {
   const sheetId = await getTabId(tabName);
   await api('POST', ':batchUpdate', { requests:[{ deleteDimension:{ range:{ sheetId, dimension:'ROWS', startIndex:rowNum-1, endIndex:rowNum } } }] });
 }
-
 async function ensureTab(name) {
   try { await sheetsGet(`${name}!A1`); }
   catch(e) { await api('POST',':batchUpdate',{requests:[{addSheet:{properties:{title:name}}}]}); }
   try {
-    const d = await sheetsGet(`${name}!A1`);
-    if (!d.values?.[0]?.[0] || d.values[0][0]!=='Task ID') await sheetsUpdate(`${name}!A1:P1`,[HEADERS]);
-  } catch(e) { await sheetsUpdate(`${name}!A1:P1`,[HEADERS]); }
+    const d = await sheetsGet(`${name}!A1:${LAST_COL}1`);
+    const existingHdr = d.values?.[0] || [];
+    const needsRewrite = !existingHdr[0] || existingHdr[0]!=='Task ID' || existingHdr.length < HEADERS.length;
+    if (needsRewrite) await sheetsUpdate(`${name}!A1:${LAST_COL}1`,[HEADERS]);
+  } catch(e) { await sheetsUpdate(`${name}!A1:${LAST_COL}1`,[HEADERS]); }
 }
-
 async function loadTasks() {
   try {
     await ensureTab(TAB); await ensureTab(ARCHIVE);
-    const d = await sheetsGet(`${TAB}!A2:P2000`);
+    const d = await sheetsGet(`${TAB}!A2:${LAST_COL}2000`);
     tasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
     populateCo();
     if (tasks.length === 0) await seedSampleData();
@@ -541,90 +532,96 @@ async function loadTasks() {
     document.getElementById('syncLbl').textContent = 'Synced ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   } catch(e) { showError('Could not load: ' + e.message); }
 }
-
 async function loadArchive() {
   try {
-    const d = await sheetsGet(`${ARCHIVE}!A2:P2000`);
+    const d = await sheetsGet(`${ARCHIVE}!A2:${LAST_COL}2000`);
     archiveTasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
   } catch(e) { archiveTasks = []; }
   render();
 }
-
 const rowToObj = row => { const o={}; COLS.forEach((k,i)=>{ o[k]=(row[i]||'').toString().trim(); }); return o; };
 const objToRow = o => COLS.map(k=>o[k]||'');
 function nextId() {
   const nums = tasks.map(t=>parseInt((t.id||'').replace('OV-',''))||0).filter(n=>n>0);
-  return 'OV-'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
+  const archNums = archiveTasks.map(t=>parseInt((t.id||'').replace('OV-',''))||0).filter(n=>n>0);
+  const all = [...nums, ...archNums];
+  return 'OV-'+String((all.length?Math.max(...all):0)+1).padStart(3,'0');
 }
-
 async function seedSampleData() {
   const ago = n => { const d=new Date(today); d.setDate(d.getDate()-n); return dStr(d); };
   const s = [
-    {company:'Blumen Systems',type:'Policy & Regulatory',desc:'White House permitting competition — flag opportunity for Blumen',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(18),completed:'',notes:'White House issuing a permitting competition open for one month, seeking GIS and tech applications to streamline permitting. Entities registered for matchmaking with federal agencies on possible procurements. CEQ to post application instructions by end of month. Flagged for Blumen Systems to apply.'},
-    {company:'Antora Energy',type:'Policy & Regulatory',desc:'DOE/IRS 48C tax credit (~$20M) certified for Pratt project',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(22),completed:ago(10),notes:"DOE/IRS formally certified Antora's ~$20M 48C allocation for the Pratt project. Outcome was not guaranteed given changes to project from original application. DOE could not officially meet with Antora as it was protected tax info — Boundary Stone informally back-channeled DOE staff to get this across the line."},
-    {company:'Blue Energy',type:'Commercial',desc:'Connected Blue Energy to Steel Dynamics for steel supply + power offtake',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(20),completed:ago(12),notes:"Connected Blue Energy to Steel Dynamics (SDI), one of the largest US steel manufacturers. SDI interest is two-fold: (1) supplying Blue Energy with domestic nuclear-grade steel, important if they pursue LPO funding, and (2) buying power from Blue Energy's Texas project for SDI steelmaking plants once online."},
-    {company:'PHNX Materials',type:'Policy & Regulatory',desc:'SBIR reauth — strategy for up to $30M award + Montana delegation intros',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'In Progress',source:'Slack',due:'',created:ago(15),completed:'',notes:"Identified new SBIR program for PHNX effective once president signs SBIR reauthorization bill — authorizes awards up to $30M. Working with PHNX on strategy and project positioning. Introducing to Montana delegation to highlight recent $5M award and build Congressional champions for larger $30M DOE grant. DOE decision still pending."},
-    {company:'BurnBot',type:'Policy & Regulatory',desc:"Intro BSP's new Republican T&I staffer — fuel management opportunities",reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(14),completed:'',notes:'New BSP teammate joining — 10-year Republican Hill staffer on T&I Committee who led resiliency and FEMA work. Introducing her to BurnBot to provide overview of how agencies are thinking about fuel management and wildfire mitigation, and to surface new opportunities.'},
-    {company:'Earth Force',type:'Policy & Regulatory',desc:"Intro BSP's new Republican T&I staffer — wildfire mitigation opportunities",reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(14),completed:'',notes:'Same new BSP teammate (former Republican T&I Hill staffer, resiliency/FEMA focus) to be introduced to Earth Force. Goal is to provide overview of agency thinking on fuel management and wildfire mitigation and identify new opportunities.'},
-    {company:'Antora Energy',type:'Policy & Regulatory',desc:'Resolved CBP customs hold — 20+ shipments released at Port of LA',reqby:'Founder / Portco',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(12),completed:ago(5),notes:"Antora had 20+ shipments held at Port of LA by CBP for several weeks, CBP unresponsive to their customs agent. Boundary Stone reached out to Senator Thune's team who made a direct call to CBP. All containers subsequently released."},
-    {company:'Crux',type:'Commercial',desc:'BSP manufacturing client connected to Crux — NDA signed, potential 45X sale in 2027',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'In Progress',source:'Slack',due:'',created:ago(8),completed:'',notes:"Connected a BSP manufacturing client to Crux. Both parties now under NDA. Anticipated large 45X tax credit sale in 2027. Working with both sides to explore whether Crux's new debt capital markets offering in 2026 could provide an interim solution."},
-    {company:'MOLG',type:'Policy & Regulatory',desc:'DOE/Amazon e-waste critical minerals partnership — check MOLG participation',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(6),completed:'',notes:'DOE and Amazon announced partnership to recover critical minerals from e-waste. Flagged for MOLG to confirm whether they are already participating via their existing Amazon relationship. If not, Boundary Stone offered to bring MOLG into DOE directly.'},
+    {company:'Blumen Systems',type:'Policy & Regulatory',desc:'White House permitting competition — flag opportunity for Blumen',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(18),completed:'',notes:'White House issuing a permitting competition open for one month, seeking GIS and tech applications to streamline permitting. Entities registered for matchmaking with federal agencies on possible procurements. CEQ to post application instructions by end of month. Flagged for Blumen Systems to apply.',createdBy:'System (seed)'},
+    {company:'Antora Energy',type:'Policy & Regulatory',desc:'DOE/IRS 48C tax credit (~$20M) certified for Pratt project',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(22),completed:ago(10),notes:"DOE/IRS formally certified Antora's ~$20M 48C allocation for the Pratt project. Outcome was not guaranteed given changes to project from original application. DOE could not officially meet with Antora as it was protected tax info — Boundary Stone informally back-channeled DOE staff to get this across the line.",createdBy:'System (seed)'},
+    {company:'Blue Energy',type:'Commercial',desc:'Connected Blue Energy to Steel Dynamics for steel supply + power offtake',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(20),completed:ago(12),notes:"Connected Blue Energy to Steel Dynamics (SDI), one of the largest US steel manufacturers. SDI interest is two-fold: (1) supplying Blue Energy with domestic nuclear-grade steel, important if they pursue LPO funding, and (2) buying power from Blue Energy's Texas project for SDI steelmaking plants once online.",createdBy:'System (seed)'},
+    {company:'PHNX Materials',type:'Policy & Regulatory',desc:'SBIR reauth — strategy for up to $30M award + Montana delegation intros',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'In Progress',source:'Slack',due:'',created:ago(15),completed:'',notes:"Identified new SBIR program for PHNX effective once president signs SBIR reauthorization bill — authorizes awards up to $30M. Working with PHNX on strategy and project positioning. Introducing to Montana delegation to highlight recent $5M award and build Congressional champions for larger $30M DOE grant. DOE decision still pending.",createdBy:'System (seed)'},
+    {company:'BurnBot',type:'Policy & Regulatory',desc:"Intro BSP's new Republican T&I staffer — fuel management opportunities",reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(14),completed:'',notes:'New BSP teammate joining — 10-year Republican Hill staffer on T&I Committee who led resiliency and FEMA work. Introducing her to BurnBot to provide overview of how agencies are thinking about fuel management and wildfire mitigation, and to surface new opportunities.',createdBy:'System (seed)'},
+    {company:'Earth Force',type:'Policy & Regulatory',desc:"Intro BSP's new Republican T&I staffer — wildfire mitigation opportunities",reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(14),completed:'',notes:'Same new BSP teammate (former Republican T&I Hill staffer, resiliency/FEMA focus) to be introduced to Earth Force. Goal is to provide overview of agency thinking on fuel management and wildfire mitigation and identify new opportunities.',createdBy:'System (seed)'},
+    {company:'Antora Energy',type:'Policy & Regulatory',desc:'Resolved CBP customs hold — 20+ shipments released at Port of LA',reqby:'Founder / Portco',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'Complete',source:'Slack',due:'',created:ago(12),completed:ago(5),notes:"Antora had 20+ shipments held at Port of LA by CBP for several weeks, CBP unresponsive to their customs agent. Boundary Stone reached out to Senator Thune's team who made a direct call to CBP. All containers subsequently released.",createdBy:'System (seed)'},
+    {company:'Crux',type:'Commercial',desc:'BSP manufacturing client connected to Crux — NDA signed, potential 45X sale in 2027',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'High',status:'In Progress',source:'Slack',due:'',created:ago(8),completed:'',notes:"Connected a BSP manufacturing client to Crux. Both parties now under NDA. Anticipated large 45X tax credit sale in 2027. Working with both sides to explore whether Crux's new debt capital markets offering in 2026 could provide an interim solution.",createdBy:'System (seed)'},
+    {company:'MOLG',type:'Policy & Regulatory',desc:'DOE/Amazon e-waste critical minerals partnership — check MOLG participation',reqby:'Overture Team',owner:'Boundary Stone',partner:'Boundary Stone Partners',priority:'Medium',status:'In Progress',source:'Slack',due:'',created:ago(6),completed:'',notes:'DOE and Amazon announced partnership to recover critical minerals from e-waste. Flagged for MOLG to confirm whether they are already participating via their existing Amazon relationship. If not, Boundary Stone offered to bring MOLG into DOE directly.',createdBy:'System (seed)'},
   ];
   let n=1;
   const rows = s.map(t=>{ t.id='OV-'+String(n++).padStart(3,'0'); t.reminderInternal='No'; t.reminderExternal='No'; return objToRow(t); });
-  await sheetsAppend(`${TAB}!A:P`, rows);
-  const d = await sheetsGet(`${TAB}!A2:P2000`);
+  await sheetsAppend(`${TAB}!A:${LAST_COL}`, rows);
+  const d = await sheetsGet(`${TAB}!A2:${LAST_COL}2000`);
   tasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
   toast('Sample data loaded ✓');
 }
-
 async function addTaskToSheet(task) {
   task.id=nextId(); task.created=nowStr(); task.reminderInternal='No'; task.reminderExternal='No';
-  await sheetsAppend(`${TAB}!A:P`,[objToRow(task)]);
+  task.createdBy = task.createdBy || currentUser || 'Unknown';
+  await sheetsAppend(`${TAB}!A:${LAST_COL}`,[objToRow(task)]);
   tasks.push(task); populateCo(); render(); toast('Task added ✓');
 }
-
 async function updateTaskInSheet(task) {
   const idx=tasks.findIndex(t=>t.id===task.id);
   if(idx===-1) throw new Error('Task not found');
-  await sheetsUpdate(`${TAB}!A${idx+2}:P${idx+2}`,[objToRow(task)]);
+  await sheetsUpdate(`${TAB}!A${idx+2}:${LAST_COL}${idx+2}`,[objToRow(task)]);
   tasks[idx]=task; render(); toast('Task updated ✓');
 }
-
 async function completeTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   tasks[idx].status='Complete'; tasks[idx].completed=nowStr();
   await sheetsUpdate(`${TAB}!I${idx+2}:M${idx+2}`,[['Complete','','','',nowStr()]]);
   render(); toast('Marked complete ✓');
 }
-
 async function archiveTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   const task={...tasks[idx],status:'Archived'};
-  await sheetsAppend(`${ARCHIVE}!A:P`,[objToRow(task)]);
+  await sheetsAppend(`${ARCHIVE}!A:${LAST_COL}`,[objToRow(task)]);
   await deleteRow(TAB, idx+2);
   tasks.splice(idx,1); render(); toast('Task archived');
 }
-
+async function approveTaskInSheet(id) {
+  const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
+  tasks[idx].status='Open';
+  await sheetsUpdate(`${TAB}!I${idx+2}`,[['Open']]);
+  render(); toast('Approved → Open ✓');
+}
+async function dismissTaskInSheet(id) {
+  const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
+  if(!confirm('Dismiss this candidate? It will be moved to Archive as Dismissed.')) return;
+  const task={...tasks[idx],status:'Dismissed',completed:nowStr()};
+  await sheetsAppend(`${ARCHIVE}!A:${LAST_COL}`,[objToRow(task)]);
+  await deleteRow(TAB, idx+2);
+  tasks.splice(idx,1); render(); toast('Dismissed');
+}
 function render() { updateCards(); if(currentTab==='active') renderPanels(); renderTable(); }
-
 function updateCards() {
-  const a=tasks.filter(t=>t.status!=='Archived');
+  const a=tasks.filter(t=>t.status!=='Archived' && t.status!=='Dismissed');
   document.getElementById('cn-all').textContent=a.length;
+  document.getElementById('cn-review').textContent=a.filter(t=>t.status==='Needs Review').length;
   document.getElementById('cn-open').textContent=a.filter(t=>t.status==='Open').length;
   document.getElementById('cn-prog').textContent=a.filter(t=>t.status==='In Progress').length;
   document.getElementById('cn-over').textContent=a.filter(isOver).length;
   document.getElementById('cn-done').textContent=a.filter(t=>t.status==='Complete').length;
 }
-
 function populateCo() {
   const sel=document.getElementById('fCo'), cur=sel.value;
   const cos=[...new Set(tasks.map(t=>t.company))].sort();
   sel.innerHTML='<option value="">All Companies</option>'+cos.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
 }
-
-const bc = s => s==='Open'?'b-open':s==='In Progress'?'b-prog':s==='Complete'?'b-done':'b-arch';
-
+const bc = s => s==='Open'?'b-open':s==='In Progress'?'b-prog':s==='Complete'?'b-done':s==='Needs Review'?'b-review':s==='Dismissed'?'b-dismiss':'b-arch';
 function renderPanels() {
   const open=tasks.filter(t=>t.status==='Open'||t.status==='In Progress');
   const byco={};
@@ -633,19 +630,21 @@ function renderPanels() {
     .map(([co,ts])=>`<div class="co-grp"><div class="co-name">${co}<span class="co-ct">${ts.length}</span></div><div class="pill-row">${ts.map(t=>`<span class="badge ${bc(t.status)}" style="cursor:pointer;margin:1px" onclick="filterCo('${co}')">${t.type.split(' ')[0]}</span>`).join('')}</div></div>`).join('')||'<div class="empty">No open tasks</div>';
   document.getElementById('pco-ct').textContent=open.length;
   const byow={};
-  tasks.filter(t=>t.status!=='Archived'&&t.status!=='Complete').forEach(t=>{ if(!byow[t.owner]) byow[t.owner]=[]; byow[t.owner].push(t); });
+  tasks.filter(t=>t.status==='Open'||t.status==='In Progress').forEach(t=>{
+    const ow=t.owner||'Unassigned';
+    if(!byow[ow]) byow[ow]=[]; byow[ow].push(t);
+  });
   document.getElementById('pow').innerHTML=Object.entries(byow).sort((a,b)=>b[1].length-a[1].length)
     .map(([ow,ts])=>`<div class="ow-row"><div class="ow-av">${ow.slice(0,2).toUpperCase()}</div><div><div class="ow-name">${ow}</div><div class="ow-ct-lbl">${ts.length} active · ${ts.filter(isOver).length} overdue</div><div class="pill-row" style="margin-top:3px">${ts.map(t=>`<span class="badge ${bc(t.status)}" style="margin:1px;cursor:pointer" title="${t.desc}">${t.company.split(' ')[0]}</span>`).join('')}</div></div></div>`).join('')||'<div class="empty">No active tasks</div>';
-  document.getElementById('pow-ct').textContent=tasks.filter(t=>t.status!=='Archived'&&t.status!=='Complete').length;
+  document.getElementById('pow-ct').textContent=Object.values(byow).reduce((s,a)=>s+a.length,0);
 }
-
 function filtered() {
-  const src=currentTab==='archive'?archiveTasks:tasks.filter(t=>t.status!=='Archived');
+  const src=currentTab==='archive'?archiveTasks:tasks.filter(t=>t.status!=='Archived' && t.status!=='Dismissed');
   const s=document.getElementById('fSearch').value.toLowerCase();
   const co=document.getElementById('fCo').value, ow=document.getElementById('fOwner').value;
   const ty=document.getElementById('fType').value, pr=document.getElementById('fPrio').value;
   return src.filter(t=>{
-    if(s&&!`${t.company} ${t.desc} ${t.owner} ${t.type} ${t.partner} ${t.notes}`.toLowerCase().includes(s)) return false;
+    if(s&&!`${t.company} ${t.desc} ${t.owner} ${t.type} ${t.partner} ${t.notes} ${t.createdBy}`.toLowerCase().includes(s)) return false;
     if(co&&t.company!==co) return false; if(ow&&t.owner!==ow) return false;
     if(ty&&t.type!==ty) return false; if(pr&&t.priority!==pr) return false;
     if(statusFilter==='__over__'&&!isOver(t)) return false;
@@ -655,14 +654,13 @@ function filtered() {
     if(sortCol!=='created'){
       const av=a[sortCol]||'',bv=b[sortCol]||''; return av<bv?sortDir:av>bv?-sortDir:0;
     }
-    // Default: Open → In Progress → Complete, then by created date desc
-    const statusOrder={'Open':0,'In Progress':1,'Complete':2,'Archived':3};
+    // Default: Needs Review → Open → In Progress → Complete, then by created date desc
+    const statusOrder={'Needs Review':0,'Open':1,'In Progress':2,'Complete':3,'Dismissed':4,'Archived':5};
     const sa=statusOrder[a.status]??2, sb=statusOrder[b.status]??2;
     if(sa!==sb) return sa-sb;
     const av=a.created||'',bv=b.created||''; return av<bv?1:av>bv?-1:0;
   });
 }
-
 function renderTable() {
   const data=filtered();
   document.getElementById('tableCt').textContent=`${data.length} task${data.length!==1?'s':''}`;
@@ -673,13 +671,33 @@ function renderTable() {
     const ddHtml=t.due?(over?`<span class="dd dd-over">⚠ ${dFmt(t.due)}</span>`:diff!==null&&diff<=7?`<span class="dd dd-soon">${dFmt(t.due)}</span>`:`<span class="dd">${dFmt(t.due)}</span>`):`<span style="color:var(--fog3)">—</span>`;
     const pc=t.priority==='High'?'p-h':t.priority==='Medium'?'p-m':'p-l';
     const hasNotes=t.notes&&t.notes.trim();
-    const acts=currentTab==='active'?`<div class="acts"><button class="bsm" onclick="event.stopPropagation();editTask('${t.id}')">Edit</button>${t.status!=='Complete'?`<button class="bsm done" onclick="event.stopPropagation();doComplete('${t.id}')">✓ Done</button>`:''}<button class="bsm arch" onclick="event.stopPropagation();doArchive('${t.id}')">Archive</button></div>`:'';
-    const detailRow=hasNotes?`<tr class="detail-row" id="detail-${t.id}" style="display:none"><td colspan="9"><div class="detail-box"><div class="detail-lbl">Full context</div><div class="detail-txt">${t.notes}</div></div></td></tr>`:'';
-    return `<tr onclick="${hasNotes?`toggleDetail('${t.id}')`:''}">
+    const isReview=t.status==='Needs Review';
+    const dupMatch=(t.notes||'').match(/Possible duplicate of (OV-\d+)/i);
+    const dupBadge=dupMatch?`<span class="dup-badge" title="Likely duplicate of ${dupMatch[1]}">DUP ${dupMatch[1]}</span>`:'';
+    const srcBadge=isReview&&t.source&&t.source!=='Manual'?`<span class="src-badge">${t.source}</span>`:'';
+    let acts='';
+    if(currentTab==='active'){
+      if(isReview){
+        acts=`<div class="acts">
+          <button class="bsm approve" onclick="event.stopPropagation();doApprove('${t.id}')">✓ Approve</button>
+          <button class="bsm" onclick="event.stopPropagation();editTask('${t.id}')">Edit</button>
+          <button class="bsm dismiss" onclick="event.stopPropagation();doDismiss('${t.id}')">Dismiss</button>
+        </div>`;
+      } else {
+        acts=`<div class="acts">
+          <button class="bsm" onclick="event.stopPropagation();editTask('${t.id}')">Edit</button>
+          ${t.status!=='Complete'?`<button class="bsm done" onclick="event.stopPropagation();doComplete('${t.id}')">✓ Done</button>`:''}
+          <button class="bsm arch" onclick="event.stopPropagation();doArchive('${t.id}')">Archive</button>
+        </div>`;
+      }
+    }
+    const ownerCell=t.owner?`<span class="ow-chip">${t.owner}</span>`:`<span class="ow-chip unset">unassigned</span>`;
+    const detailRow=hasNotes?`<tr class="detail-row ${isReview?'is-review':''}" id="detail-${t.id}" style="display:none"><td colspan="9"><div class="detail-box"><div class="detail-lbl">Full context</div><div class="detail-txt">${escapeHtml(t.notes)}</div><div class="detail-meta">Source: <strong>${t.source||'Manual'}</strong> · Created by: <strong>${t.createdBy||'—'}</strong> · Created: <strong>${dFmt(t.created)||'—'}</strong>${t.completed?` · Completed: <strong>${dFmt(t.completed)}</strong>`:''}</div></div></td></tr>`:'';
+    return `<tr class="${isReview?'row-review':''}" onclick="${hasNotes?`toggleDetail('${t.id}')`:''}">
       <td class="td-co">${hasNotes?`<span class="dot" style="margin-right:4px;color:var(--yellow2)">+</span>`:''}${t.company}</td>
       <td><span class="type-chip">${t.type}</span></td>
-      <td class="td-desc"><div class="td-desc-in">${t.desc}</div></td>
-      <td><span class="ow-chip">${t.owner}</span></td>
+      <td class="td-desc"><div class="td-desc-in">${escapeHtml(t.desc)}${dupBadge}${srcBadge}</div></td>
+      <td>${ownerCell}</td>
       <td style="white-space:nowrap"><span class="prio ${pc}"></span>${t.priority}</td>
       <td><span class="badge ${bc(t.status)}">${t.status}</span>${over?' <span class="badge b-over">Late</span>':''}</td>
       <td>${ddHtml}</td>
@@ -688,7 +706,7 @@ function renderTable() {
     </tr>${detailRow}`;
   }).join('');
 }
-
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toggleDetail(id) {
   const row=document.getElementById('detail-'+id); if(!row) return;
   const open=row.style.display!=='none';
@@ -697,11 +715,10 @@ function toggleDetail(id) {
     if(d.closest('tr')?.getAttribute('onclick')?.includes(id)) d.textContent=open?'+':'−';
   });
 }
-
 function filterStatus(s) {
   statusFilter=s;
   document.querySelectorAll('.sc').forEach(c=>c.classList.remove('active'));
-  const idx=['','Open','In Progress','__over__','Complete'].indexOf(s);
+  const idx=['','Needs Review','Open','In Progress','__over__','Complete'].indexOf(s);
   if(idx>=0) document.querySelectorAll('.sc')[idx].classList.add('active');
   render();
 }
@@ -730,10 +747,10 @@ function switchTab(tab,el){
   if(tab==='archive'&&!archiveTasks.length) loadArchive();
   clearFilters();
 }
-
 function doComplete(id){ completeTaskInSheet(id).catch(e=>toast('Error: '+e.message,true)); }
 function doArchive(id){ if(!confirm('Archive this task?')) return; archiveTaskInSheet(id).catch(e=>toast('Error: '+e.message,true)); }
-
+function doApprove(id){ approveTaskInSheet(id).catch(e=>toast('Error: '+e.message,true)); }
+function doDismiss(id){ dismissTaskInSheet(id).catch(e=>toast('Error: '+e.message,true)); }
 function openModal(){
   editId=null;
   document.getElementById('mTitle').textContent='Add New Task';
@@ -749,12 +766,12 @@ function openModal(){
 function editTask(id){
   const t=tasks.find(x=>x.id===id); if(!t) return;
   editId=id;
-  document.getElementById('mTitle').textContent='Edit Task';
+  document.getElementById('mTitle').textContent='Edit Task — '+id;
   document.getElementById('f-company').value=t.company;
   document.getElementById('f-desc').value=t.desc;
   document.getElementById('f-notes').value=t.notes||'';
   document.getElementById('f-type').value=t.type;
-  document.getElementById('f-owner').value=t.owner;
+  document.getElementById('f-owner').value=t.owner||'';
   document.getElementById('f-reqby').value=t.reqby;
   document.getElementById('f-priority').value=t.priority;
   document.getElementById('f-status').value=t.status;
@@ -765,7 +782,6 @@ function editTask(id){
 }
 function closeModal(){ document.getElementById('mbg').classList.remove('open'); }
 function closeModalOut(e){ if(e.target===document.getElementById('mbg')) closeModal(); }
-
 async function saveTask(){
   const company=document.getElementById('f-company').value.trim();
   const desc=document.getElementById('f-desc').value.trim();
@@ -788,6 +804,7 @@ async function saveTask(){
     created:ex?.created||'', completed:ex?.completed||'',
     reminderInternal:ex?.reminderInternal||'No',
     reminderExternal:ex?.reminderExternal||'No',
+    createdBy:ex?.createdBy||currentUser||'Unknown',
   };
   try {
     if(editId) await updateTaskInSheet(task);
@@ -796,14 +813,12 @@ async function saveTask(){
   } catch(e) { toast('Error: '+e.message,true); }
   finally { btn.disabled=false; btn.textContent='Save Task'; document.getElementById('modalSaving').textContent=''; }
 }
-
 function toast(msg,err=false){
   const el=document.getElementById('toast');
   el.textContent=msg; el.className=err?'show err':'show';
   setTimeout(()=>el.className='',3000);
 }
 function showError(msg){ const el=document.getElementById('errBar'); el.textContent=msg; el.classList.add('show'); }
-
 window.onload = () => {
   setTimeout(()=>{
     document.getElementById('splash').classList.add('out');
