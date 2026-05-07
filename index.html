@@ -123,6 +123,13 @@ tbody td{padding:9px 10px;font-size:11px;vertical-align:middle}
 .td-desc{max-width:280px}
 .td-desc-in{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
 .dup-badge{display:inline-block;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--prog-t);background:var(--prog-bg);border-radius:3px;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+.bulk-textarea{width:100%;min-height:280px;border:1px solid var(--border);border-radius:var(--r);padding:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);background:var(--fog);outline:none;resize:vertical;line-height:1.5}
+.bulk-textarea:focus{border-color:var(--yellow);background:#fff}
+.bulk-help{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.bulk-help code{background:var(--fog2);padding:1px 6px;border-radius:3px;font-size:10px}
+.bulk-status{margin-top:10px;font-size:11px;line-height:1.6}
+.btn-bulk{background:#fff;color:var(--navy);border:1px solid var(--navy);padding:6px 16px;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .15s;display:flex;align-items:center;gap:6px;margin-left:6px}
+.btn-bulk:hover{background:var(--navy);color:#fff}
 .src-badge{display:inline-block;font-size:9px;letter-spacing:.04em;color:var(--muted);background:var(--fog2);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:middle}
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
 .b-review{background:var(--review-bg);color:var(--review-t)}
@@ -261,10 +268,16 @@ tbody tr.row-review:hover{background:#FFF3E8}
       <div class="tab active" onclick="switchTab('active',this)">Active Tasks</div>
       <div class="tab" onclick="switchTab('archive',this)">Archive</div>
     </div>
-    <button class="btn-add" onclick="openModal()" style="padding:8px 20px;font-size:12px" id="addTaskBtn">
-      <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
-      Add Task
-    </button>
+    <div style="display:flex;gap:6px">
+      <button class="btn-bulk" onclick="openBulkModal()" id="bulkPasteBtn" title="Paste multiple rows from a TSV (e.g. from a triage skill run)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>
+        Bulk Paste
+      </button>
+      <button class="btn-add" onclick="openModal()" style="padding:8px 20px;font-size:12px" id="addTaskBtn">
+        <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
+        Add Task
+      </button>
+    </div>
   </div>
   <div class="filter-bar">
     <label>Filter</label>
@@ -319,6 +332,28 @@ tbody tr.row-review:hover{background:#FFF3E8}
 <div class="ft">Overture Ventures · Portfolio Support Tracker · Internal use only</div>
 </div>
 <div id="toast"></div>
+<div class="mbg" id="bulkBg" onclick="closeBulkModalOut(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Bulk Paste Tasks</h2>
+      <button class="modal-x" onclick="closeBulkModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="bulk-help">
+        Paste tab-separated rows below. Columns must match the Sheet schema in order: <code>Task ID, Company, Task Type, Description, Requested By, Owner, External Partner, Priority, Status, Source, Due Date, Date Created, Date Completed, Notes, Reminder Sent (Internal), Reminder Sent (External), Created By</code>. Header rows are auto-skipped. Blank or duplicate Task IDs get auto-generated.
+      </div>
+      <textarea id="bulk-tsv" class="bulk-textarea" placeholder="OV-013	Radify Metals	Press &amp; Comms	Author 'why we invested' piece	Overture Team	Shomik		Medium	Needs Review	Email		2026-05-05		...	No	No	Triage Skill"></textarea>
+      <div class="bulk-status" id="bulk-status"></div>
+    </div>
+    <div class="modal-ft">
+      <div class="modal-ft-left" id="bulkSaving"></div>
+      <div class="modal-ft-right">
+        <button class="btn-can" onclick="closeBulkModal()">Cancel</button>
+        <button class="btn-sv" id="bulkGoBtn" onclick="bulkAdd()">Add Rows</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="mbg" id="mbg" onclick="closeModalOut(event)">
   <div class="modal">
     <div class="modal-hdr">
@@ -820,6 +855,88 @@ function toast(msg,err=false){
   setTimeout(()=>el.className='',3000);
 }
 function showError(msg){ const el=document.getElementById('errBar'); el.textContent=msg; el.classList.add('show'); }
+
+// === Bulk Paste ===
+function openBulkModal(){
+  document.getElementById('bulk-tsv').value='';
+  document.getElementById('bulk-status').innerHTML='';
+  document.getElementById('bulkBg').classList.add('open');
+  setTimeout(()=>document.getElementById('bulk-tsv').focus(),100);
+}
+function closeBulkModal(){ document.getElementById('bulkBg').classList.remove('open'); }
+function closeBulkModalOut(e){ if(e.target===document.getElementById('bulkBg')) closeBulkModal(); }
+
+async function bulkAdd(){
+  const text=document.getElementById('bulk-tsv').value.trim();
+  const statusEl=document.getElementById('bulk-status');
+  if(!text){ statusEl.innerHTML='<span style="color:var(--rose)">Paste some TSV rows first.</span>'; return; }
+
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  const existingIds=new Set([...tasks,...archiveTasks].map(t=>t.id).filter(Boolean));
+  const allNums=[...existingIds].map(id=>parseInt((id||'').replace('OV-',''))||0).filter(n=>n>0);
+  let nextNum=(allNums.length?Math.max(...allNums):0)+1;
+  const rows=[],skipped=[];
+
+  for(let i=0;i<lines.length;i++){
+    const cells=lines[i].split('\t');
+    // Skip header row
+    if(cells[0]==='Task ID' || cells[0]?.toLowerCase().trim()==='task id') continue;
+    if(cells.length<3 || !cells[1] || !cells[3]){ skipped.push(`Row ${i+1}: missing required columns (Company, Description) — skipped`); continue; }
+
+    const task={};
+    COLS.forEach((k,idx)=>task[k]=(cells[idx]||'').trim());
+
+    // Handle ID: regenerate if blank, malformed, or duplicate
+    if(!task.id || !/^OV-\d+$/.test(task.id) || existingIds.has(task.id)){
+      const orig=task.id;
+      task.id='OV-'+String(nextNum++).padStart(3,'0');
+      if(orig && existingIds.has(orig)) skipped.push(`Row ${i+1}: ID ${orig} already exists — wrote as ${task.id}`);
+    }
+    existingIds.add(task.id);
+
+    // Sensible defaults for blank fields
+    if(!task.created) task.created=nowStr();
+    if(!task.priority) task.priority='Medium';
+    if(!task.status) task.status='Needs Review';
+    if(!task.source) task.source='Manual';
+    if(!task.reqby) task.reqby='Overture Team';
+    if(!task.type) task.type='Other';
+    if(!task.reminderInternal) task.reminderInternal='No';
+    if(!task.reminderExternal) task.reminderExternal='No';
+    if(!task.createdBy) task.createdBy=currentUser||'Bulk Paste';
+
+    rows.push(task);
+  }
+
+  if(!rows.length){
+    statusEl.innerHTML=`<span style="color:var(--rose)">No valid rows found.</span>${skipped.length?'<br><span style="color:var(--muted)">'+skipped.join('<br>')+'</span>':''}`;
+    return;
+  }
+
+  const btn=document.getElementById('bulkGoBtn');
+  btn.disabled=true; btn.textContent=`Adding ${rows.length}…`;
+  document.getElementById('bulkSaving').textContent=`Writing ${rows.length} rows to Sheet…`;
+
+  try{
+    const values=rows.map(t=>objToRow(t));
+    await sheetsAppend(`${TAB}!A:${LAST_COL}`,values);
+    rows.forEach(t=>tasks.push(t));
+    populateCo();
+    render();
+    let msg=`<span style="color:var(--done-t)">✓ Added ${rows.length} row${rows.length!==1?'s':''} to the Sheet.</span>`;
+    if(skipped.length) msg+=`<br><span style="color:var(--prog-t)">Notes:<br>${skipped.join('<br>')}</span>`;
+    statusEl.innerHTML=msg;
+    toast(`${rows.length} rows added ✓`);
+    document.getElementById('bulk-tsv').value='';
+    setTimeout(closeBulkModal,2000);
+  } catch(e){
+    statusEl.innerHTML=`<span style="color:var(--rose)">Error: ${e.message}</span>`;
+    toast('Error: '+e.message,true);
+  } finally {
+    btn.disabled=false; btn.textContent='Add Rows';
+    document.getElementById('bulkSaving').textContent='';
+  }
+}
 window.onload = () => {
   setTimeout(()=>{
     document.getElementById('splash').classList.add('out');
