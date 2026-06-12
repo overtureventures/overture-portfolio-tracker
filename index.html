@@ -6,7 +6,6 @@
 <title>Overture Ventures — Portfolio Support Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --navy:   #0B1F3A;
@@ -40,16 +39,6 @@ body{font-family:'DM Mono',monospace;background:var(--fog);color:var(--text);min
 .sp-bar{width:140px;height:1px;background:rgba(255,255,255,.1)}
 .sp-fill{height:100%;background:var(--yellow);width:0;animation:spfill 1.6s ease forwards}
 @keyframes spfill{to{width:100%}}
-#loginScreen{position:fixed;inset:0;background:var(--navy);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500}
-#loginScreen.show{display:flex}
-.login-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:40px 48px;text-align:center;max-width:400px;width:90%}
-.login-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:#fff;margin-bottom:4px}
-.login-logo em{color:var(--yellow);font-style:italic}
-.login-sub{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-bottom:28px}
-.login-desc{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:28px;line-height:1.7}
-.login-btn{background:var(--yellow);color:var(--navy);border:none;padding:11px 28px;border-radius:var(--r);font-family:'DM Mono',monospace;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
-.login-btn:hover{background:var(--yellow2)}
-.login-note{font-size:10px;color:rgba(255,255,255,.25);margin-top:16px}
 .hdr{background:var(--navy);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.07)}
 .hdr-logo{font-family:'Fraunces',serif;font-size:16px;font-weight:300;color:#fff;display:flex;align-items:center;gap:10px}
 .hdr-logo em{color:var(--yellow);font-style:italic}
@@ -211,18 +200,6 @@ tbody tr.row-review:hover{background:#FFF3E8}
   <div class="sp-logo">Overture <em>Ventures</em></div>
   <div class="sp-sub">Portfolio Support Tracker</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
-</div>
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">Overture <em>Ventures</em></div>
-    <div class="login-sub">Portfolio Support</div>
-    <div class="login-desc">Sign in with your email to access the portfolio support tracker.</div>
-    <button class="login-btn" onclick="signIn()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-      Sign in with Google
-    </button>
-    <div class="login-note">Access restricted to invited users</div>
-  </div>
 </div>
 <header class="hdr" id="appHeader" style="display:none">
   <div class="hdr-logo">
@@ -471,15 +448,9 @@ tbody tr.row-review:hover{background:#FFF3E8}
   </div>
 </div>
 <script>
-const SHEET_ID  = '1Ya24kZYmLvuuoum6Jq4vz1L_6jcRqP-OOJFEYwitasE';
-const CLIENT_ID = '567331526524-e5qpq7v737rbs1gm5p7cla8iht8rbka9.apps.googleusercontent.com';
-const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets';
-const API_BASE  = 'https://sheets.googleapis.com/v4/spreadsheets';
 const TAB = 'Tasks', ARCHIVE = 'Archive';
 const COLS    = ['id','company','type','desc','reqby','owner','partner','priority','status','source','due','created','completed','notes','reminderInternal','reminderExternal','createdBy'];
 const HEADERS = ['Task ID','Company','Task Type','Description','Requested By','Owner','External Partner','Priority','Status','Source','Due Date','Date Created','Date Completed','Notes / Outcome','Reminder Sent (Internal)','Reminder Sent (External)','Created By'];
-const LAST_COL = 'Q';
-let accessToken = null;
 let currentUser = '';
 let tasks = [], archiveTasks = [];
 let sortCol = 'created', sortDir = -1;
@@ -490,78 +461,53 @@ const dFmt  = s => s ? new Date(s+'T12:00:00').toLocaleDateString('en-US',{month
 const dDiff = s => s ? Math.round((new Date(s+'T12:00:00')-today)/86400000) : null;
 const nowStr= () => dStr(new Date());
 const isOver= t => t.due && t.status!=='Complete' && t.status!=='Archived' && t.status!=='Dismissed' && t.status!=='Needs Review' && new Date(t.due+'T12:00:00') < today;
-function signIn() {
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: async (resp) => {
-      if (resp.error) { showError('Sign-in failed: ' + resp.error); return; }
-      accessToken = resp.access_token;
-      try {
-        const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + accessToken } });
-        const u = await r.json();
-        currentUser = u.given_name || u.email;
-        document.getElementById('userName').textContent = currentUser;
-        document.getElementById('userAv').textContent = (u.given_name||u.email).slice(0,2).toUpperCase();
-      } catch(e) {}
-      showApp();
-      loadTasks();
-    }
-  });
-  client.requestAccessToken();
+async function loadIdentity() {
+  // Cloudflare Access exposes the logged-in user's identity on the protected domain.
+  try {
+    const r = await fetch('/cdn-cgi/access/get-identity');
+    if (!r.ok) throw new Error();
+    const u = await r.json();
+    currentUser = u.name || u.given_name || u.email || 'Team';
+    const initials = (u.name || u.email || 'OV').split(/[\s@.]+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+    document.getElementById('userName').textContent = currentUser;
+    document.getElementById('userAv').textContent = initials;
+  } catch(e) {
+    currentUser = 'Team';
+    document.getElementById('userName').textContent = 'Team';
+  }
 }
 function signOut() {
   if (!confirm('Sign out?')) return;
-  google.accounts.oauth2.revoke(accessToken, () => {
-    accessToken = null; tasks = []; archiveTasks = []; currentUser='';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('appHeader').style.display = 'none';
-    document.getElementById('loginScreen').classList.add('show');
-  });
+  window.location.href = '/cdn-cgi/access/logout';
 }
 function showApp() {
-  document.getElementById('loginScreen').classList.remove('show');
   document.getElementById('appHeader').style.display = 'flex';
   document.getElementById('app').style.display = 'block';
 }
+// ---- Same-origin API layer (Cloudflare Pages Function -> Google Sheets) ----
 async function api(method, path, body) {
-  const url = `${API_BASE}/${SHEET_ID}${path}`;
-  const r = await fetch(url, {
-    method, headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+  const r = await fetch('/api' + path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined
   });
-  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || r.status); }
+  if (!r.ok) {
+    let msg = r.status;
+    try { const e = await r.json(); msg = e.error || msg; } catch(_) {}
+    throw new Error(msg);
+  }
   return r.json();
 }
-const sheetsGet    = range => api('GET', `/values/${encodeURIComponent(range)}`);
-const sheetsUpdate = (range, values) => api('PUT', `/values/${encodeURIComponent(range)}?valueInputOption=RAW`, { values });
-const sheetsAppend = (range, values) => api('POST', `/values/${encodeURIComponent(range)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, { values });
-const _ids = {};
-async function getTabId(name) {
-  if (_ids[name]) return _ids[name];
-  const d = await fetch(`${API_BASE}/${SHEET_ID}?fields=sheets.properties`, { headers:{ Authorization:'Bearer '+accessToken } }).then(r=>r.json());
-  d.sheets.forEach(s => { _ids[s.properties.title] = s.properties.sheetId; });
-  return _ids[name];
-}
-async function deleteRow(tabName, rowNum) {
-  const sheetId = await getTabId(tabName);
-  await api('POST', ':batchUpdate', { requests:[{ deleteDimension:{ range:{ sheetId, dimension:'ROWS', startIndex:rowNum-1, endIndex:rowNum } } }] });
-}
-async function ensureTab(name) {
-  try { await sheetsGet(`${name}!A1`); }
-  catch(e) { await api('POST',':batchUpdate',{requests:[{addSheet:{properties:{title:name}}}]}); }
-  try {
-    const d = await sheetsGet(`${name}!A1:${LAST_COL}1`);
-    const existingHdr = d.values?.[0] || [];
-    const needsRewrite = !existingHdr[0] || existingHdr[0]!=='Task ID' || existingHdr.length < HEADERS.length;
-    if (needsRewrite) await sheetsUpdate(`${name}!A1:${LAST_COL}1`,[HEADERS]);
-  } catch(e) { await sheetsUpdate(`${name}!A1:${LAST_COL}1`,[HEADERS]); }
-}
+const sheetsGet    = tab => api('GET', `/tasks?tab=${encodeURIComponent(tab)}`);
+const sheetsUpdate = (tab, row, values) => api('PUT', `/tasks/${row}?tab=${encodeURIComponent(tab)}`, { values });
+const sheetsAppend = (tab, values) => api('POST', `/tasks?tab=${encodeURIComponent(tab)}`, { values });
+const deleteRow    = (tab, row) => api('DELETE', `/tasks/${row}?tab=${encodeURIComponent(tab)}`);
+const ensureTab    = tab => api('POST', '/ensure', { tab, headers: HEADERS });
 async function loadTasks() {
   try {
     await ensureTab(TAB); await ensureTab(ARCHIVE);
-    const d = await sheetsGet(`${TAB}!A2:${LAST_COL}2000`);
-    tasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
+    const d = await sheetsGet(TAB);
+    tasks = (d.rows||[]).filter(r=>r[0]).map(rowToObj);
     populateCo();
     if (tasks.length === 0) await seedSampleData();
     render();
@@ -570,8 +516,8 @@ async function loadTasks() {
 }
 async function loadArchive() {
   try {
-    const d = await sheetsGet(`${ARCHIVE}!A2:${LAST_COL}2000`);
-    archiveTasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
+    const d = await sheetsGet(ARCHIVE);
+    archiveTasks = (d.rows||[]).filter(r=>r[0]).map(rowToObj);
   } catch(e) { archiveTasks = []; }
   render();
 }
@@ -598,47 +544,47 @@ async function seedSampleData() {
   ];
   let n=1;
   const rows = s.map(t=>{ t.id='OV-'+String(n++).padStart(3,'0'); t.reminderInternal='No'; t.reminderExternal='No'; return objToRow(t); });
-  await sheetsAppend(`${TAB}!A:${LAST_COL}`, rows);
-  const d = await sheetsGet(`${TAB}!A2:${LAST_COL}2000`);
-  tasks = (d.values||[]).filter(r=>r[0]).map(rowToObj);
+  await sheetsAppend(TAB, rows);
+  const d = await sheetsGet(TAB);
+  tasks = (d.rows||[]).filter(r=>r[0]).map(rowToObj);
   toast('Sample data loaded ✓');
 }
 async function addTaskToSheet(task) {
   task.id=nextId(); task.created=nowStr(); task.reminderInternal='No'; task.reminderExternal='No';
   task.createdBy = task.createdBy || currentUser || 'Unknown';
-  await sheetsAppend(`${TAB}!A:${LAST_COL}`,[objToRow(task)]);
+  await sheetsAppend(TAB,[objToRow(task)]);
   tasks.push(task); populateCo(); render(); toast('Task added ✓');
 }
 async function updateTaskInSheet(task) {
   const idx=tasks.findIndex(t=>t.id===task.id);
   if(idx===-1) throw new Error('Task not found');
-  await sheetsUpdate(`${TAB}!A${idx+2}:${LAST_COL}${idx+2}`,[objToRow(task)]);
+  await sheetsUpdate(TAB, idx+2, objToRow(task));
   tasks[idx]=task; render(); toast('Task updated ✓');
 }
 async function completeTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   tasks[idx].status='Complete'; tasks[idx].completed=nowStr();
-  await sheetsUpdate(`${TAB}!I${idx+2}:M${idx+2}`,[['Complete','','','',nowStr()]]);
+  await sheetsUpdate(TAB, idx+2, objToRow(tasks[idx]));
   render(); toast('Marked complete ✓');
 }
 async function archiveTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   const task={...tasks[idx],status:'Archived'};
-  await sheetsAppend(`${ARCHIVE}!A:${LAST_COL}`,[objToRow(task)]);
+  await sheetsAppend(ARCHIVE,[objToRow(task)]);
   await deleteRow(TAB, idx+2);
   tasks.splice(idx,1); render(); toast('Task archived');
 }
 async function approveTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   tasks[idx].status='Open';
-  await sheetsUpdate(`${TAB}!I${idx+2}`,[['Open']]);
+  await sheetsUpdate(TAB, idx+2, objToRow(tasks[idx]));
   render(); toast('Approved → Open ✓');
 }
 async function dismissTaskInSheet(id) {
   const idx=tasks.findIndex(t=>t.id===id); if(idx===-1) return;
   if(!confirm('Dismiss this candidate? It will be moved to Archive as Dismissed.')) return;
   const task={...tasks[idx],status:'Dismissed',completed:nowStr()};
-  await sheetsAppend(`${ARCHIVE}!A:${LAST_COL}`,[objToRow(task)]);
+  await sheetsAppend(ARCHIVE,[objToRow(task)]);
   await deleteRow(TAB, idx+2);
   tasks.splice(idx,1); render(); toast('Dismissed');
 }
@@ -919,7 +865,7 @@ async function bulkAdd(){
 
   try{
     const values=rows.map(t=>objToRow(t));
-    await sheetsAppend(`${TAB}!A:${LAST_COL}`,values);
+    await sheetsAppend(TAB,values);
     rows.forEach(t=>tasks.push(t));
     populateCo();
     render();
@@ -938,13 +884,13 @@ async function bulkAdd(){
   }
 }
 window.onload = () => {
+  loadIdentity();
+  showApp();
+  loadTasks();
   setTimeout(()=>{
     document.getElementById('splash').classList.add('out');
-    setTimeout(()=>{
-      document.getElementById('splash').style.display='none';
-      document.getElementById('loginScreen').classList.add('show');
-    },600);
-  },1800);
+    setTimeout(()=>{ document.getElementById('splash').style.display='none'; },600);
+  },1200);
 };
 </script>
 </body>
