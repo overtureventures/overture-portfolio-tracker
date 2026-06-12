@@ -1,26 +1,28 @@
 /**
- * Overture Portfolio Support Tracker — API layer
- * Cloudflare Pages Function (drop this file into functions/api/ in the repo)
+ * Overture Portfolio Support Tracker — API layer (v2)
+ * Cloudflare Pages Function: functions/api/[[route]].js
  *
- * Routes (all same-origin, automatically behind the Cloudflare Access policy):
- *   GET  /api/tasks            -> all rows from the tasks tab (first row treated as headers)
- *   POST /api/tasks            -> append a row.  Body: { "values": ["col A", "col B", ...] }
- *   PUT  /api/tasks/:rowNumber -> overwrite a row (1-indexed, as shown in Sheets).
- *                                 Body: { "values": ["col A", "col B", ...] }
+ * Routes (same-origin, behind Cloudflare Access):
+ *   GET    /api/tasks?tab=Tasks        -> { headers, rows } (rows exclude header row)
+ *   POST   /api/tasks?tab=Tasks        -> append rows. Body: { "values": [[...], ...] }
+ *   PUT    /api/tasks/:row?tab=Tasks   -> overwrite a row (1-indexed sheet row >= 2).
+ *                                         Body: { "values": [...] }
+ *   DELETE /api/tasks/:row?tab=Tasks   -> delete a row entirely (shifts rows up)
+ *   POST   /api/ensure                 -> create tab if missing + fix header row.
+ *                                         Body: { "tab": "...", "headers": [...] }
  *
- * Required environment variables (Pages project > Settings > Variables and Secrets):
- *   SHEET_ID             - the Google Sheet ID
- *   SHEET_TAB            - tab name holding tasks (e.g. "Tasks")
- *   GOOGLE_CLIENT_EMAIL  - service account email (xxx@xxx.iam.gserviceaccount.com)
- *   GOOGLE_PRIVATE_KEY   - service account private key (paste the full PEM; \n escapes are handled)
+ * Allowed tabs: "Tasks" and "Archive" only.
  *
- * The service account email must be shared on the Sheet as an Editor.
- * No credentials ever reach the browser.
+ * Required environment variables (Pages > Settings > Variables and Secrets):
+ *   SHEET_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY
+ *   (SHEET_TAB optional; default tab when ?tab= omitted is "Tasks")
  */
 
-// ---- Google auth: exchange a signed JWT for a short-lived access token ----
+const ALLOWED_TABS = ["Tasks", "Archive"];
 
-let cachedToken = null; // { token, expiresAt } cached per isolate
+// ---- Google auth: signed JWT -> short-lived access token ----
+
+let cachedToken = null;
 
 async function getAccessToken(env) {
   const now = Math.floor(Date.now() / 1000);
@@ -110,6 +112,12 @@ function columnLetter(n) {
   return s;
 }
 
+async function getSheetIdByTitle(env, title) {
+  const meta = await sheetsFetch(env, "?fields=sheets.properties");
+  const match = (meta.sheets || []).find((s) => s.properties.title === title);
+  return match ? match.properties.sheetId : null;
+}
+
 // ---- Request handling ----
 
 const json = (data, status = 200) =>
@@ -118,44 +126,88 @@ const json = (data, status = 200) =>
     headers: { "Content-Type": "application/json" },
   });
 
+function resolveTab(request, env) {
+  const url = new URL(request.url);
+  const tab = url.searchParams.get("tab") || env.SHEET_TAB || "Tasks";
+  if (!ALLOWED_TABS.includes(tab)) return null;
+  return tab;
+}
+
 export async function onRequest(context) {
   const { request, env, params } = context;
-  const route = params.route || []; // e.g. ["tasks"] or ["tasks", "7"]
+  const route = params.route || []; // ["tasks"], ["tasks","7"], or ["ensure"]
 
   try {
+    // POST /api/ensure  { tab, headers }
+    if (route[0] === "ensure" && request.method === "POST") {
+      const body = await request.json();
+      const tab = body.tab;
+      if (!ALLOWED_TABS.includes(tab)) return json({ error: "Invalid tab" }, 400);
+      const headers = Array.isArray(body.headers) ? body.headers : [];
+
+      let sheetId = await getSheetIdByTitle(env, tab);
+      if (sheetId === null) {
+        await sheetsFetch(env, ":batchUpdate", {
+          method: "POST",
+          body: JSON.stringify({
+            requests: [{ addSheet: { properties: { title: tab } } }],
+          }),
+        });
+      }
+      if (headers.length) {
+        const data = await sheetsFetch(
+          env,
+          `values/${encodeURIComponent(tab)}!A1:${columnLetter(headers.length)}1`
+        ).catch(() => ({}));
+        const existing = (data.values && data.values[0]) || [];
+        const needsRewrite =
+          !existing[0] ||
+          existing[0] !== headers[0] ||
+          existing.length < headers.length;
+        if (needsRewrite) {
+          await sheetsFetch(
+            env,
+            `values/${encodeURIComponent(tab)}!A1:${columnLetter(headers.length)}1?valueInputOption=RAW`,
+            { method: "PUT", body: JSON.stringify({ values: [headers] }) }
+          );
+        }
+      }
+      return json({ ok: true, tab });
+    }
+
     if (route[0] !== "tasks") return json({ error: "Not found" }, 404);
 
-    const tab = env.SHEET_TAB || "Tasks";
+    const tab = resolveTab(request, env);
+    if (!tab) return json({ error: "Invalid tab" }, 400);
 
-    // GET /api/tasks
+    // GET /api/tasks?tab=
     if (request.method === "GET" && route.length === 1) {
       const data = await sheetsFetch(
         env,
         `values/${encodeURIComponent(tab)}!A:Z`
       );
-      const rows = data.values || [];
-      const headers = rows[0] || [];
-      const tasks = rows.slice(1).map((r, i) => ({
-        row: i + 2, // 1-indexed sheet row number
-        values: r,
-      }));
-      return json({ headers, tasks });
+      const all = data.values || [];
+      const headers = all[0] || [];
+      const rows = all.slice(1);
+      return json({ headers, rows });
     }
 
-    // POST /api/tasks  { values: [...] }
+    // POST /api/tasks?tab=  { values: [[...], ...] }  (append one or many rows)
     if (request.method === "POST" && route.length === 1) {
       const body = await request.json();
-      if (!Array.isArray(body.values))
-        return json({ error: "Body must include a 'values' array" }, 400);
+      if (!Array.isArray(body.values) || !body.values.length)
+        return json({ error: "Body must include a non-empty 'values' array" }, 400);
+      // Accept either a single row (flat array) or an array of rows.
+      const rows = Array.isArray(body.values[0]) ? body.values : [body.values];
       const result = await sheetsFetch(
         env,
-        `values/${encodeURIComponent(tab)}!A:Z:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-        { method: "POST", body: JSON.stringify({ values: [body.values] }) }
+        `values/${encodeURIComponent(tab)}!A:Z:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+        { method: "POST", body: JSON.stringify({ values: rows }) }
       );
       return json({ ok: true, updatedRange: result.updates?.updatedRange });
     }
 
-    // PUT /api/tasks/:row  { values: [...] }
+    // PUT /api/tasks/:row?tab=  { values: [...] }
     if (request.method === "PUT" && route.length === 2) {
       const rowNum = parseInt(route[1], 10);
       if (!Number.isInteger(rowNum) || rowNum < 2)
@@ -163,16 +215,41 @@ export async function onRequest(context) {
       const body = await request.json();
       if (!Array.isArray(body.values))
         return json({ error: "Body must include a 'values' array" }, 400);
-      const lastCol = columnLetter(Math.max(body.values.length, 1));
+      const values = Array.isArray(body.values[0]) ? body.values[0] : body.values;
+      const lastCol = columnLetter(Math.max(values.length, 1));
       await sheetsFetch(
         env,
-        `values/${encodeURIComponent(tab)}!A${rowNum}:${lastCol}${rowNum}?valueInputOption=USER_ENTERED`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ values: [body.values] }),
-        }
+        `values/${encodeURIComponent(tab)}!A${rowNum}:${lastCol}${rowNum}?valueInputOption=RAW`,
+        { method: "PUT", body: JSON.stringify({ values: [values] }) }
       );
       return json({ ok: true, row: rowNum });
+    }
+
+    // DELETE /api/tasks/:row?tab=
+    if (request.method === "DELETE" && route.length === 2) {
+      const rowNum = parseInt(route[1], 10);
+      if (!Number.isInteger(rowNum) || rowNum < 2)
+        return json({ error: "Row must be an integer >= 2" }, 400);
+      const sheetId = await getSheetIdByTitle(env, tab);
+      if (sheetId === null) return json({ error: "Tab not found" }, 404);
+      await sheetsFetch(env, ":batchUpdate", {
+        method: "POST",
+        body: JSON.stringify({
+          requests: [
+            {
+              deleteDimension: {
+                range: {
+                  sheetId,
+                  dimension: "ROWS",
+                  startIndex: rowNum - 1,
+                  endIndex: rowNum,
+                },
+              },
+            },
+          ],
+        }),
+      });
+      return json({ ok: true, deleted: rowNum });
     }
 
     return json({ error: "Method not allowed" }, 405);
